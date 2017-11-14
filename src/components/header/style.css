@@ -1,0 +1,8 @@
+.selectWithLabelAbove {
+    display: flex;
+    flex-direction: column;
+}
+.selectLabel {
+    font-size: small;
+    margin-bottom: -5px;
+}
