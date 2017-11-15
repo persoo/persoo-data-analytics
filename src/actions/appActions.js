@@ -38,8 +38,16 @@ export function createAppActions(store) {
             context.accountsLoaded = true;
             context.accounts = response.body;
             if (response.body.length > 0) {
-                context.accountIndex = 0;
-                context.accountID = response.body[0].id;
+                /* guess selected accountID from URL */
+                let url = store.getState().url;
+                let accountIDFromURL = url && url.replace(/^\//,'').replace(/\/.*$/,'');
+                if (accountIDFromURL && _findIndexByID(context.accounts, accountIDFromURL) != null) {
+                    context.accountID = accountIDFromURL;
+                    context.accountIndex = _findIndexByID(context.accounts, accountIDFromURL);
+                } else {
+                    context.accountIndex = 0;
+                    context.accountID = response.body[0].id;
+                }
             }
             store.updateState({context: context});
             if (context.accountID) {
@@ -71,7 +79,9 @@ export function createAppActions(store) {
             let context = store.getState().context;
 
             context.tablesLoaded = true;
-            context.tables = response.body.map((str) => ({id: str, name: str}));
+            context.tables = response.body
+                .filter((str) => (str.match(/ads\./)))
+                .map((str) => ({id: str, name: str}));
             if (context.tables.length <= 0) {
                 console.log('TODO handle case, when "tables==[]".');
             }

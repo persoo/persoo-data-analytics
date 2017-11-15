@@ -6,6 +6,7 @@ import Header from './header';
 import PersooClient from './persooClient';
 import Login from '../routes/login';
 import SearchResults from '../routes/searchResults';
+import Detail from '../routes/detail';
 import Profile from '../routes/profile';
 import Debug from '../routes/debug';
 import Redirect from '../routes/redirect';
@@ -38,28 +39,33 @@ export default class App extends Component {
 
         /* main */
         this.actions.loadAccounts();
+
+        // to be able to call "preact-router" directly from my EJS tempates.
+        window.paGlobalRouteFunction = Router.route;
     }
 
     _updateLocalStateFromStore() {
         this.setState(this.store.getState());
     }
 
-	/** Gets fired when the route changes.
-	 *	@param {Object} event		"change" event from [preact-router](http://git.io/preact-router)
-	 *	@param {string} event.url	The newly routed URL
-	 */
-	handleRoute = e => {
-		this.currentUrl = e.url;
-	};
+    /** Gets fired when the route changes.
+     *    @param {Object} event        "change" event from [preact-router](http://git.io/preact-router)
+     *    @param {string} event.url    The newly routed URL
+     */
+    handleRoute = e => {
+        console.log('Handle Route:' + e.url);
+        this.currentUrl = e.url;
+        this.store && this.store.updateState({url: e.url});
+    };
 
     getProfile() {
-    	return new Promise(resolve=>{
-    		setTimeout(()=>{
-    			resolve(() => <div>LOADED</div>);
-    		},2000);
-    	});
+        return new Promise(resolve=>{
+            setTimeout(()=>{
+                resolve(() => <div>LOADED</div>);
+            },2000);
+        });
     }
-	render() {
+    render() {
         let { context, metadata } = this.state;
 
         let logState = {
@@ -72,10 +78,10 @@ export default class App extends Component {
 
         const searchResultsOfferTemplate = this.state.searchResultsOfferTemplate;
         const searchResultsURL = getSearchResultsURL(context);
-		return (
-			<div id="app">
+        return (
+            <div id="app">
                 <PersooClient context={context} />
-				{
+                {
                     context.accountsLoaded &&
                      <Header
                         context={context}
@@ -83,12 +89,11 @@ export default class App extends Component {
                         searchResultsURL={searchResultsURL}
                     />
                 }
-				<Router onChange={this.handleRoute}>
+                <Router onChange={this.handleRoute.bind(this)}>
                     <Redirect path="/" to={searchResultsURL} />
                     <Login path="/login" />
-					<Profile path="/profile/" user="me" />
-					<Profile path="/profile/:user" />
-                    <Debug path="/:accountID/:env/:adsTable/detail/:itemID?" pageType="detail" />
+                    <Profile path="/profile/" user="me" />
+                    <Profile path="/profile/:user" />
                     <AsyncRoute
                         path="/detail/:itemID"
                         getComponent={this.getProfile}
@@ -98,11 +103,14 @@ export default class App extends Component {
                         metadata={metadata}
                         searchResultsOfferTemplate={searchResultsOfferTemplate}
                     />
+                    <Detail path="/:accountID/:env/:adsTable/detail/:itemID?" pageType="detail"
+                        context={context}
+                    />
                     <Debug default pageType="404"
                         accounts={context.accounts}
                         accountsLoaded={context.accountsLoaded} />
-				</Router>
-			</div>
-		);
-	}
+                </Router>
+            </div>
+        );
+    }
 }

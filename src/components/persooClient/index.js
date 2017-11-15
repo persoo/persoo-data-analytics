@@ -42,6 +42,8 @@ export default class PersooClient extends Component {
         'p';d.settings_tolerance>0&&(setTimeout(this.finish,d.settings_tolerance),this.hideBody());var i=(
         d.scriptsHostname||'http://scripts.persoo.cz/')+d.apikey+'/'+h;this.loadScript(i+'/actions.js'),
         this.loadScript(i+'/persoo.js')}}}(document,window,!1,persooConfig,'persooEnvironment');persooLoader.init();
+
+        persoo.ignoreDefaultSendPageview = true;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -62,7 +64,7 @@ export default class PersooClient extends Component {
             });
             window.persoo.reloadPersoo(document, window);
         }
-	}
+    }
 
     render(props) {
         return null;
