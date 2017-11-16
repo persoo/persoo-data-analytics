@@ -14,7 +14,7 @@ import Redirect from '../routes/redirect';
 
 import { getInitialState, createAppStore } from '../store/appStore';
 import { createAppActions } from '../actions/appActions';
-import { getSearchResultsURL } from '../utils/urlUtils';
+import { getURLfromState } from '../utils/urlUtils';
 
 /*
    TODO plan
@@ -53,9 +53,18 @@ export default class App extends Component {
      *    @param {string} event.url    The newly routed URL
      */
     handleRoute = e => {
-        console.log('Handle Route:' + e.url);
+        console.log('Changing Route to:' + e.url);
         this.currentUrl = e.url;
-        this.store && this.store.updateState({url: e.url});
+        if (this.store) {
+            const pageType = e.current.attributes.pageType
+            const url = e.url;
+            const { context } = this.store.getState();
+            context.pageType = pageType;
+            if (pageType == 'detail') {
+                context.itemID = e.current.attributes.matches.itemID;
+            }
+            this.store.updateState({url, context});
+        }
     };
 
     getProfile() {
@@ -66,7 +75,7 @@ export default class App extends Component {
         });
     }
     render() {
-        let { context, metadata } = this.state;
+        let { context, accounts, environments, tables, metadata } = this.state;
 
         let logState = {
             cloudID: context.cloudID,
@@ -77,7 +86,7 @@ export default class App extends Component {
         console.log('Render App: ' + JSON.stringify(logState));
 
         const searchResultsOfferTemplate = this.state.searchResultsOfferTemplate;
-        const searchResultsURL = getSearchResultsURL(context);
+        const searchResultsURL = getURLfromState(context, 'list');
         return (
             <div id="app">
                 <PersooClient context={context} />
@@ -85,15 +94,18 @@ export default class App extends Component {
                     context.accountsLoaded &&
                      <Header
                         context={context}
+                        accounts={accounts}
+                        environments={environments}
+                        tables={tables}
                         actions={this.actions}
                         searchResultsURL={searchResultsURL}
                     />
                 }
                 <Router onChange={this.handleRoute.bind(this)}>
                     <Redirect path="/" to={searchResultsURL} />
-                    <Login path="/login" />
-                    <Profile path="/profile/" user="me" />
-                    <Profile path="/profile/:user" />
+                    <Login path="/login" cloudID={context.cloudID} pageType="login" />
+                    <Profile path="/profile/" user="me" pageType='profile' />
+                    <Profile path="/profile/:user" pageType='profile' />
                     <AsyncRoute
                         path="/detail/:itemID"
                         getComponent={this.getProfile}
@@ -107,7 +119,6 @@ export default class App extends Component {
                         context={context}
                     />
                     <Debug default pageType="404"
-                        accounts={context.accounts}
                         accountsLoaded={context.accountsLoaded} />
                 </Router>
             </div>

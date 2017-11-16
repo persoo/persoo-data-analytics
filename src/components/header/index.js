@@ -46,7 +46,7 @@ export default class Header extends Component {
         }
     }
     render() {
-        const {actions, context, searchResultsURL} = this.props;
+        const {actions, context, accounts, environments, tables, searchResultsURL} = this.props;
         return (
             <div>
                 <Toolbar className="toolbar">
@@ -63,9 +63,9 @@ export default class Header extends Component {
                         <Toolbar.Section>
                             {
                                 [
-                                    this.renderToolbarSelect("Account", actions.setAccountAction, context.accountIndex, context.accounts),
-                                    this.renderToolbarSelect("Environment", actions.setEnvironmentAction, context.environmentIndex, context.environments),
-                                    this.renderToolbarSelect("Table", actions.setTableAction, context.tableIndex, context.tables)
+                                    this.renderToolbarSelect("Account", actions.setAccountAction, context.accountIndex, accounts),
+                                    this.renderToolbarSelect("Environment", actions.setEnvironmentAction, context.environmentIndex, environments),
+                                    this.renderToolbarSelect("Table", actions.setTableAction, context.tableIndex, tables)
                                 ]
                             }
                         </Toolbar.Section>

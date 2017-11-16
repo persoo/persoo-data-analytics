@@ -4,25 +4,29 @@ import createStore from './createStore';
 export function getInitialState(options) {
     const state = {
         options: null,
+        accounts: [],
+        environments: [
+            {id: "p", name: "production             ."},
+            {id: "test", name: "test             ."}
+        ],
+        tables: [],
         context: {
             cloudID: "test-a",
 
             environmentID: "p",
             environmentIndex: 0,
-            environments: [
-                {id: "p", name: "production             ."},
-                {id: "test", name: "test             ."}
-            ],
 
             accountID: null,
             accountIndex: null,
-            accounts: [],
             accountsLoaded: false,
 
             tableID: null,
             tableIndex: null,
-            tables: [],
-            tablesLoaded: false
+            tablesLoaded: false,
+
+            pageType: 'list',
+
+            itemID: null
         },
         metadata: {}
     };

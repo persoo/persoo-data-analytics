@@ -1,5 +1,5 @@
 import { Router, route } from 'preact-router';
-import { getSearchResultsURL } from '../utils/urlUtils';
+import { getURLfromState, parseURLToContext } from '../utils/urlUtils';
 import jsonFetch from 'json-fetch';
 import cloudConfig from '../cloudConfig';
 
@@ -25,6 +25,7 @@ export function createAppActions(store) {
         console.log('Please, login first.');
         Router.route('/login');
     }
+
     function loadAccounts() {
         let cloudID = store.getState().context.cloudID;
 
@@ -34,27 +35,26 @@ export function createAppActions(store) {
             expectedStatuses: [200],
         })
         .then((response) => {
-            var context = store.getState().context;
+            let context = store.getState().context;
+            Object.assign(context, parseURLToContext());
+
             context.accountsLoaded = true;
-            context.accounts = response.body;
+            const accounts = response.body;
             if (response.body.length > 0) {
                 /* guess selected accountID from URL */
-                let url = store.getState().url;
-                let accountIDFromURL = url && url.replace(/^\//,'').replace(/\/.*$/,'');
-                if (accountIDFromURL && _findIndexByID(context.accounts, accountIDFromURL) != null) {
-                    context.accountID = accountIDFromURL;
-                    context.accountIndex = _findIndexByID(context.accounts, accountIDFromURL);
-                } else {
+                context.accountIndex = _findIndexByID(accounts, context.accountID);
+                if (context.accountIndex == null) {
                     context.accountIndex = 0;
-                    context.accountID = response.body[0].id;
+                    context.accountID = accounts[0].id;
                 }
             }
-            store.updateState({context: context});
+            store.updateState({
+                accounts,
+                context
+            });
             if (context.accountID) {
                 loadMetaDataTables();
                 loadSearchResultsWidgetTemplate();
-
-                route(getSearchResultsURL(context));
             }
         })
         .catch(_handleAPIError);
@@ -79,20 +79,23 @@ export function createAppActions(store) {
             let context = store.getState().context;
 
             context.tablesLoaded = true;
-            context.tables = response.body
+            let tables = response.body
                 .filter((str) => (str.match(/ads\./)))
                 .map((str) => ({id: str, name: str}));
-            if (context.tables.length <= 0) {
+            if (tables.length <= 0) {
                 console.log('TODO handle case, when "tables==[]".');
             }
             /* set "ads.products" as default if exists */
             let tableID = 'ads.products';
-            context.tableIndex = _findIndexByID(context.tables, tableID);
+            context.tableIndex = _findIndexByID(tables, tableID);
             context.tableID = tableID;
 
-            store.updateState({context:context});
+            store.updateState({
+                context,
+                tables
+            });
             loadMetaDataVariableForTable();
-            route(getSearchResultsURL(context));
+            route(getURLfromState(context));
         })
         .catch(_handleAPIError);
     }
@@ -138,23 +141,23 @@ export function createAppActions(store) {
     return {
         loadAccounts: loadAccounts,
         updateContextFromURL(accountID, environmentID, tableID) {
-            var context = store.getState().context;
+            const { context, accounts, environments, tables } = store.getState();
             if (context.accountID !== accountID ||
                 context.environmentID !== environmentID ||
                 context.tableID !== tableID) {
 
                 context.accountID = accountID;
-                context.accountIndex = _findIndexByID(context.accounts, accountID);
+                context.accountIndex = _findIndexByID(accounts, accountID);
                 context.environmentID = environmentID;
-                context.environmentIndex = _findIndexByID(context.environments, environmentID);
+                context.environmentIndex = _findIndexByID(environments, environmentID);
                 context.tableID = tableID;
-                context.tableIndex = _findIndexByID(context.tables, tableID);
-                store.updateState({context: context});
+                context.tableIndex = _findIndexByID(tables, tableID);
+                store.updateState({context});
             }
         },
         setAccountAction(index) {
-            var context = store.getState().context;
-            context.accountID = context.accounts[index].id;
+            const { context, accounts } = store.getState();
+            context.accountID = accounts[index].id;
             context.accountIndex = index;
             store.updateState({
                 context: context,
@@ -163,32 +166,31 @@ export function createAppActions(store) {
             loadMetaDataTables();
             loadSearchResultsWidgetTemplate();
 
-            route(getSearchResultsURL(context));
+            route(getURLfromState(context));
         },
         setEnvironmentAction(index) {
-            var context = store.getState().context;
-            context.environmentID = context.environments[index].id;
+            const { context, environments } = store.getState();
+            context.environmentID = environments[index].id;
             context.environmentIndex = index;
-
-            context.tables = [];
             context.tableID = null;
             context.tableIndex = null;
             store.updateState({
                 context: context,
-                metadata: {}
+                metadata: {},
+                tables: []
             });
             loadMetaDataTables();
 
-            route(getSearchResultsURL(context));
+            route(getURLfromState(context));
         },
         setTableAction(index) {
-            var context = store.getState().context;
-            context.tableID = context.tables[index].id;
+            var { context, tables } = store.getState();
+            context.tableID = tables[index].id;
             context.tableIndex = index;
-            store.updateState({context: context});
+            store.updateState({context});
             loadMetaDataVariableForTable();
 
-            route(getSearchResultsURL(context));
+            route(getURLfromState(context));
         }
     };
 }
