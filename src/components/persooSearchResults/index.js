@@ -55,6 +55,8 @@ function getSearchResultsHTML(context, searchResultsOfferTemplate, tableMetadata
 
     offerContent.customCSS += '.persoo-result-item__statistics > div > span {color: #ccc;}';
 
+    offerContent.searchAlgorithm = context.tableID.replace(/^ads\./, '') + "DebugAlgorithm";
+
     // get numeric fields
     let numericFieldIDs = [];
     for (let variableID in tableMetadata) {

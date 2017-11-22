@@ -11,26 +11,27 @@ import Profile from '../routes/profile';
 import Debug from '../routes/debug';
 import Redirect from '../routes/redirect';
 
-
 import { getInitialState, createAppStore } from '../store/appStore';
 import { createAppActions } from '../actions/appActions';
 import { getURLfromState } from '../utils/urlUtils';
+import Cookies from '../utils/cookies';
 
-/*
-   TODO plan
-
-       * on App Init -- get state from URL + check URL not changed
-       * Finish: global endpoints config for all clouds
-
-*/
-
+const SELECTED_ALGORITHM_IDS_COOKIE = 'selectedAlgorithmIDs';
 
 export default class App extends Component {
     constructor(args) {
         super(args);
 
-        // Note: we need different store for each "autocomplete" instance in a page
-        this.store = createAppStore(getInitialState(args.options || {}));
+        // Remember selected algorithm in cookies, so any change will update by F5 on each browser tab
+        let selectedAlgorithmIDs = [];
+        if (Cookies.hasItem(SELECTED_ALGORITHM_IDS_COOKIE)) {
+            selectedAlgorithmIDs = JSON.parse(Cookies.getItem(SELECTED_ALGORITHM_IDS_COOKIE));
+        }
+        let options = {
+            selectedAlgorithmIDs
+        };
+
+        this.store = createAppStore(getInitialState(options));
         this.unsubcribe = this.store.subscribe(this._updateLocalStateFromStore.bind(this));
         this.setState(this.store.getState());
 
@@ -45,7 +46,9 @@ export default class App extends Component {
     }
 
     _updateLocalStateFromStore() {
-        this.setState(this.store.getState());
+        const state = this.store.getState();
+        Cookies.setItem(SELECTED_ALGORITHM_IDS_COOKIE, JSON.stringify(state.context.selectedAlgorithmIDs));
+        this.setState(state);
     }
 
     /** Gets fired when the route changes.
@@ -75,7 +78,8 @@ export default class App extends Component {
         });
     }
     render() {
-        let { context, accounts, environments, tables, metadata } = this.state;
+        let { context, clouds, accounts, environments, tables, metadata, algorithms, algorithmPreviews,
+            currentItem, currentItemLoaded, currentItemLoading } = this.state;
 
         let logState = {
             cloudID: context.cloudID,
@@ -94,6 +98,7 @@ export default class App extends Component {
                     context.accountsLoaded &&
                      <Header
                         context={context}
+                        clouds={clouds}
                         accounts={accounts}
                         environments={environments}
                         tables={tables}
@@ -117,6 +122,16 @@ export default class App extends Component {
                     />
                     <Detail path="/:accountID/:env/:adsTable/detail/:itemID?" pageType="detail"
                         context={context}
+                        currentItem={currentItem}
+                        currentItemLoading={currentItemLoading}
+                        currentItemLoaded={currentItemLoaded}
+                        metadata={metadata}
+                        algorithms={algorithms}
+                        algorithmPreviews={algorithmPreviews}
+                        loadDetailItem={this.actions.loadDetailItem}
+                        loadAlgorithmPreviews={this.actions.loadAlgorithmPreviews}
+                        changeAlgorithmInSlot={this.actions.changeAlgorithmInSlot}
+                        removeAlgorithmInSlot={this.actions.removeAlgorithmInSlot}
                     />
                     <Debug default pageType="404"
                         accountsLoaded={context.accountsLoaded} />

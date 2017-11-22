@@ -1,9 +1,15 @@
 import createStore from './createStore';
+import cloudConfig from '../cloudConfig';
 
+function getClouds() {
+    var cloudIDs = Object.keys(cloudConfig.clouds);
+    return cloudIDs.map( (cloudID) => ({id: cloudID, name: cloudID}));
+}
 
 export function getInitialState(options) {
     const state = {
         options: null,
+        clouds: getClouds(),
         accounts: [],
         environments: [
             {id: "p", name: "production             ."},
@@ -11,7 +17,8 @@ export function getInitialState(options) {
         ],
         tables: [],
         context: {
-            cloudID: "test-a",
+            cloudID: getClouds()[0].id,
+            cloudIndex: 0,
 
             environmentID: "p",
             environmentIndex: 0,
@@ -26,7 +33,16 @@ export function getInitialState(options) {
 
             pageType: 'list',
 
-            itemID: null
+            itemID: null,
+            selectedAlgorithmIDs: options.selectedAlgorithmIDs || [] // do show cards for each algorithm on product detail
+        },
+        algorithms: [],
+        algorithmPreviews: {
+            // algorithmID: {
+            //     items: []
+            //     loadingStatus:
+            //     context: {itemID, categoryID,...}
+            // }
         },
         metadata: {}
     };

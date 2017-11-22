@@ -1,0 +1,21 @@
+.algorithmPreviewContainer {
+   display: -webkit-flex;
+   display: flex;
+   -webkit-flex-direction: row;
+   flex-direction: row;
+   -webkit-align-items: flex-start;
+   align-items: flex-start;
+}
+.algorithmPreviewItem {
+    width: 150px;
+    padding: 12px;
+    margin-right: 20px;
+}
+.algorithmPreviewItemImage {
+    max-width: 150px;
+    max-height: 150px
+}
+.label {
+    font-weight: lighter;
+    font-size: smaller;
+}

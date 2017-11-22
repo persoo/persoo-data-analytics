@@ -46,7 +46,7 @@ export default class Header extends Component {
         }
     }
     render() {
-        const {actions, context, accounts, environments, tables, searchResultsURL} = this.props;
+        const {actions, context, clouds, accounts, environments, tables, searchResultsURL} = this.props;
         return (
             <div>
                 <Toolbar className="toolbar">
@@ -109,6 +109,19 @@ export default class Header extends Component {
                                 });
                             }}/>
                         </div>
+                        { false && <div>
+                                Select Persoo cloud <Select
+                                    hintText={"Select an Persoo Cloud"}
+                                    selectedIndex={context.cloudIndex}
+                                    onChange={(e) => actions.setCloudAction(e.selectedIndex)}
+                                    style={{width:"300px"}}
+                                >
+                                {
+                                   clouds.map((item) => (<Select.Item>{item.name + '       .'}</Select.Item>))
+                                }
+                                </Select>
+                            </div>
+                        }
           </Dialog.Body>
           <Dialog.Footer>
             <Dialog.FooterButton accept={true}>okay</Dialog.FooterButton>

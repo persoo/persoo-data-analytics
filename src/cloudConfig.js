@@ -5,7 +5,7 @@ export default {
         'production': {
             rtpAPIEndpoint: 'rtp.persoo.cz',
             adminAPIEndpoint: 'https://adminapi.persoo.cz',
-            scriptsEndpoint: 'https://scripts.persoo.cz',
+            scriptsEndpoint: 'https://scripts.persoo.cz/',
             adminEndpoint: 'https://admin.persoo.cz'
         },
         'test-a': {
