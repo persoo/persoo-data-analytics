@@ -49,7 +49,7 @@ export default class Detail extends Component {
                     }
                     {
                         tabID == 'algorithms' && <div>
-                            <h2>Algorithms related to this item</h2>
+                            <h2>Algorithms (called with this itemGroupID)</h2>
                             {
                                 context.selectedAlgorithmIDs.map( (algorithmID, algorithmPreviewSlotIndex) => (
                                     <AlgorithmPreviewBlock

@@ -18,7 +18,7 @@ export function createAppActions(store) {
                 return i;
             }
         }
-        return null;
+        return -1;
     }
 
     function askForLogin() {
@@ -43,10 +43,6 @@ export function createAppActions(store) {
             if (response.body.length > 0) {
                 /* guess selected accountID from URL */
                 context.accountIndex = _findIndexByID(accounts, context.accountID);
-                if (context.accountIndex == null) {
-                    context.accountIndex = 0;
-                    context.accountID = accounts[0].id;
-                }
             }
             store.updateState({
                 accounts,
@@ -151,13 +147,13 @@ export function createAppActions(store) {
                 currentItemLoading: itemID
             });
             jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + envID + '/workflow.json' +
-                '?_e=getRecommendation&_vid=AAABXVVE15rgBWXTLmDcCwFM&_v=%220.1.0%22&_a=persooAnalytics' +
-                '&algorithmID=' + adsTableID + 'DebugAlgorithm&itemGroupID=' + itemID +
+                '?_e=getRecommendation&_vid=AAABXGgkcSIz5pScemhlisdj&_v=%220.1.0%22&_a=persooAnalytics' +
+                '&algorithmID=%22' + adsTableID + 'DebugAlgorithm%22&itemGroupID=%22' + itemID + '%22' +
                 '&boolQuery=' + encodeURIComponent(JSON.stringify({
                     must:[
                         {
                             type:"customRule",
-                            fields: ["itemGroupID", "$eq", "value", itemID]
+                            fields: ["itemGroupID", "$eq", "value", "\"" + itemID + "\""]
                         }
                     ]
                 })),
@@ -223,8 +219,8 @@ export function createAppActions(store) {
             store.updateState({ algorithmPreviews });
 
             jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + envID + '/workflow.json' +
-                '?_e=getRecommendation&_vid=AAABXVVE15rgBWXTLmDcCwFM&_v=%220.1.0%22&_a=persooAnalytics' +
-                '&algorithmID=' + algorithmID + '&itemID=' + itemID,
+                '?_e=getRecommendation&_vid=AAABXGgkcSIz5pScemhlisdj&_v=%220.1.0%22&_a=persooAnalytics' +
+                '&algorithmID=%22' + algorithmID + '%22&itemGroupID=%22' + itemID + '%22',
                 {
                     method: 'GET',
                     expectedStatuses: [200],
@@ -320,6 +316,8 @@ export function createAppActions(store) {
             const { context, accounts } = store.getState();
             context.accountID = accounts[index].id;
             context.accountIndex = index;
+            context.tableID = null;
+            context.tableIndex = -1;
             store.updateState({
                 context: context,
                 metadata: {},
@@ -337,7 +335,7 @@ export function createAppActions(store) {
             context.environmentID = environments[index].id;
             context.environmentIndex = index;
             context.tableID = null;
-            context.tableIndex = null;
+            context.tableIndex = -1;
             store.updateState({
                 context: context,
                 metadata: {},

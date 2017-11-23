@@ -29,16 +29,18 @@ export default class Header extends Component {
             return  (
                 <div class={style.selectWithLabelAbove}>
                     <div class={style.selectLabel}>{label}</div>
-                    <Select
-                        hintText={"Select an " + label}
-                        selectedIndex={selectedItemIndex}
-                        onChange={(e) => setAction(e.selectedIndex)}
-                        style={{width:"300px"}}
-                    >
                     {
-                       items.map((item) => (<Select.Item>{item.name}</Select.Item>))
+                        (items.length > 0) && <Select
+                            hintText={"Select an " + label}
+                            selectedIndex={selectedItemIndex}
+                            onChange={(e) => setAction(e.selectedIndex)}
+                            style={{width:"300px"}}
+                        >
+                        {
+                           items.map((item) => (<Select.Item>{item.name}</Select.Item>))
+                        }
+                        </Select>
                     }
-                    </Select>
                     </div>
             );
         } else {

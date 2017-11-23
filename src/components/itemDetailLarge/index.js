@@ -20,7 +20,7 @@ export default class ItemDetailLarge extends Component {
                         <LayoutGrid>
                             <LayoutGrid.Inner>
                                 <LayoutGrid.Cell cols="4">
-                                    <img src={currentItem.imageLink} />
+                                    <img src={currentItem.imageLink} class={style.image}/>
                                 </LayoutGrid.Cell>
                                 <LayoutGrid.Cell cols="4">
                                     <List>

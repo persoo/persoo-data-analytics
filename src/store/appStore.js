@@ -24,11 +24,11 @@ export function getInitialState(options) {
             environmentIndex: 0,
 
             accountID: null,
-            accountIndex: null,
+            accountIndex: -1,
             accountsLoaded: false,
 
             tableID: null,
-            tableIndex: null,
+            tableIndex: -1,
             tablesLoaded: false,
 
             pageType: 'list',

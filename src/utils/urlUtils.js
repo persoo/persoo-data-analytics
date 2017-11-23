@@ -8,16 +8,20 @@ export function getURLfromState(context, pageType) {
     return resultURL;
 }
 
+function parseIDorNull(str) {
+    return str == 'null' ? null : str;
+}
+
 export function parseURLToContext() {
     const url = document.location.pathname;
     let contextIncrement = {};
     let urlParts = url.split('/');
     if (urlParts.length >= 5) {
         contextIncrement = {
-            accountID: urlParts[1],
-            environmentID: urlParts[2],
-            tableID: urlParts[3],
-            pageType: urlParts[4]
+            accountID: parseIDorNull(urlParts[1]),
+            environmentID: parseIDorNull(urlParts[2]),
+            tableID: parseIDorNull(urlParts[3]),
+            pageType: parseIDorNull(urlParts[4])
         }
     }
     if (urlParts.length >= 6) {
