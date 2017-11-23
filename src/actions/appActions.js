@@ -39,7 +39,12 @@ export function createAppActions(store) {
             Object.assign(context, parseURLToContext());
 
             context.accountsLoaded = true;
-            const accounts = response.body;
+            let accounts = response.body;
+            accounts.sort(function(a,b) {
+                var x = a.name.toLowerCase();
+                var y = b.name.toLowerCase();
+                return x < y ? -1 : x > y ? 1 : 0;
+            });
             if (response.body.length > 0) {
                 /* guess selected accountID from URL */
                 context.accountIndex = _findIndexByID(accounts, context.accountID);
@@ -222,7 +227,7 @@ export function createAppActions(store) {
 
             // add prefixes to algorithms
             algorithms.map( algorithm => {
-                if (!algorithm.name.match(/^algorithm/)) {
+                if (!algorithm.name.match(/^Algorithm/)) {
                     algorithm.name = 'Algorithm: ' + algorithm.name;
                 }
             });

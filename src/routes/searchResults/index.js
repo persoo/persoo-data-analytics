@@ -20,6 +20,9 @@ export default class SearchResults extends Component {
             <div class={style.home}>
                 <h1>Search Results</h1>
                 {
+                    (context.accountID == null) && <div>Select account above.</div>
+                }
+                {
                     haveData && <PersooSearchResults {...props} key={contextKey} />
                 }
             </div>

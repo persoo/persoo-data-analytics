@@ -90,7 +90,7 @@ export default class App extends Component {
             tableID: context.tableID
         };
         console.log('Render App: ' + JSON.stringify(logState));
-
+        const isLoggedIn = !!(accounts && accounts.length > 0);
         const searchResultsOfferTemplate = this.state.searchResultsOfferTemplate;
         const searchResultsURL = getURLfromState(context, 'list');
         return (
@@ -110,7 +110,9 @@ export default class App extends Component {
                 }
                 <Router onChange={this.handleRoute.bind(this)}>
                     <Redirect path="/" to={searchResultsURL} />
-                    <Login path="/login" cloudID={context.cloudID} pageType="login" />
+                    <Login path="/login" cloudID={context.cloudID} pageType="login"
+                        isLoggedIn={isLoggedIn}
+                        searchResultsURL={searchResultsURL}/>
                     <Profile path="/profile/" user="me" pageType='profile' />
                     <Profile path="/profile/:user" pageType='profile' />
                     <AsyncRoute
