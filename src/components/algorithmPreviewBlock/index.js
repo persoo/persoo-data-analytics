@@ -1,4 +1,5 @@
 import { h, Component } from 'preact';
+import { getURLfromState } from '../../utils/urlUtils';
 import Card from 'preact-material-components/Card';
 import LayoutGrid from 'preact-material-components/LayoutGrid';
 import List from 'preact-material-components/List';
@@ -17,6 +18,8 @@ export default class AlgorithmPreviewBlock extends Component {
         const algorithmID = context.selectedAlgorithmIDs[algorithmPreviewSlotIndex];
         const algorithmPreviewData = algorithmPreviews[algorithmID];
         const algorithmSelectIndex = (algorithmPreviewData && algorithmPreviewData.algorithmIndex) || -1; // fallback for the case "no algorithm selected"
+        const urlPrefix = getURLfromState(context, 'detail').replace(/detail\/.*$/, "detail/");
+
         return (
                 <div>
                     <Card>
@@ -49,8 +52,10 @@ export default class AlgorithmPreviewBlock extends Component {
                                     {
                                         algorithmPreviewData.items.map( (currentItem, index) => (
                                             <div class={style.algorithmPreviewItem}>
-                                                <img src={currentItem.imageLink} class={style.algorithmPreviewItemImage}/>
-                                                <div>{currentItem.title}</div>
+                                                <a href={urlPrefix + currentItem.itemGroupID }>
+                                                    <img src={currentItem.imageLink} class={style.algorithmPreviewItemImage}/>
+                                                    <div>{currentItem.title}</div>
+                                                </a>
                                                 <div><span class={style.label}>categoryID:</span> {currentItem.categoryID}</div>
                                                 <div><span class={style.label}>productType:</span> {currentItem.productType}</div>
                                                 <div><span class={style.label}>brand:</span> {currentItem.brand}</div>

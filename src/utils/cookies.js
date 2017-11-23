@@ -22,6 +22,8 @@
 |*|
 \*/
 
+var document = typeof document === 'undefined' ? {} : document;
+
 export default {
   getItem: function (sKey) {
     if (!sKey) { return null; }

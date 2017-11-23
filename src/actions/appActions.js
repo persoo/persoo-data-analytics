@@ -52,6 +52,7 @@ export function createAppActions(store) {
                 loadMetaDataTables();
                 loadSearchResultsWidgetTemplate();
                 loadAlgorithms();
+                loadScenarios();
             }
         })
         .catch(_handleAPIError);
@@ -109,9 +110,11 @@ export function createAppActions(store) {
             expectedStatuses: [200],
         })
         .then((response) => {
-            var metadata = store.getState().metadata;
-            metadata[tableID] = response.body;
-            store.updateState({metadata:metadata});
+            let { algorithms, scenarios, metadata, currentItem } = store.getState();
+            const metaVariables = response.body;
+            metadata[tableID] = metaVariables;
+            algorithms = _addFakeAlgorithmsFromMetadata(algorithms, scenarios, metaVariables, currentItem);
+            store.updateState({metadata, algorithms});
         })
         .catch(_handleAPIError);
     }
@@ -153,7 +156,7 @@ export function createAppActions(store) {
                     must:[
                         {
                             type:"customRule",
-                            fields: ["itemGroupID", "$eq", "value", "\"" + itemID + "\""]
+                            fields: ["itemGroupID", "$eq", "value", JSON.stringify(itemID.toString())]
                         }
                     ]
                 })),
@@ -164,10 +167,16 @@ export function createAppActions(store) {
             )
             .then((response) => {
                 if (response.body.data && response.body.data.items && response.body.data.items.length > 0) {
+                    let currentItem = response.body.data.items[0];
+                    const { algorithms, scenarios, metadata, context } = store.getState();
+                    const metaVariables = metadata && metadata[context.tableID];
+                    let enrichedAlgorithms = _addFakeAlgorithmsFromMetadata(algorithms, scenarios, metaVariables, currentItem);
                     store.updateState({
-                        currentItem: response.body.data.items[0],
+                        algorithms: enrichedAlgorithms,
+                        currentItem: currentItem,
                         currentItemLoaded: itemID
                     });
+                    loadAlgorithmPreviews(itemID);
                 } else {
                     console.log('Cannot load item ' + itemID + ' - server did not return correct data structures.');
                     store.updateState({
@@ -193,20 +202,134 @@ export function createAppActions(store) {
             expectedStatuses: [200],
         })
         .then((response) => {
-            var algorithms = response.body;
+            let algorithms = response.body;
+            const { scenarios, metadata, context, currentItem } = store.getState();
+            const metaVariables = metadata[context.tableID];
+            algorithms = _addFakeAlgorithmsFromMetadata(algorithms, scenarios, metaVariables, currentItem);
             store.updateState({algorithms: algorithms});
         })
         .catch(_handleAPIError);
+    }
+
+    function loadScenarios() {
+        var state = store.getState();
+        let cloudID = state.context.cloudID;
+        var accountID = state.context.accountID;
+        var envID = state.context.environmentID;
+
+        jsonFetch( cloudConfig.clouds[cloudID].adminAPIEndpoint + '/accounts/' + accountID + '/scenarios', {
+            method: 'GET',
+            // body: {},
+            expectedStatuses: [200],
+        })
+        .then((response) => {
+            let scenarios = response.body;
+            const { algorithms, metadata, context, currentItem } = store.getState();
+            const metaVariables = metadata[context.tableID];
+            let enrichedAlgorithms = _addFakeAlgorithmsFromMetadata(algorithms, scenarios, metaVariables, currentItem);
+            store.updateState({algorithms: enrichedAlgorithms, scenarios: scenarios});
+        })
+        .catch(_handleAPIError);
+    }
+
+    function _addFakeAlgorithmsFromMetadata(algorithms, scenarios, metaVariables, currentItem) {
+        if (algorithms && currentItem && metaVariables) {
+            console.log('Updating algorithms');
+
+            // remove old fakes and scenarios
+            algorithms = algorithms.filter( alg => (alg.class != "fieldPreview" && alg.class != "scenario"));
+
+            // add prefixes to algorithms
+            algorithms.map( algorithm => {
+                if (!algorithm.name.match(/^algorithm/)) {
+                    algorithm.name = 'Algorithm: ' + algorithm.name;
+                }
+            });
+
+            // add scenarios
+            const scenarioIDs = Object.keys(scenarios);
+            scenarios.map (scenario => {
+                algorithms.push({
+                    class: "scenario",
+                    name: "Scenario: " + scenario.name,
+                    id: "scenario_" + scenario.id
+                });
+            });
+
+            // add new fake algorithms
+            const variableIDs = Object.keys(metaVariables);
+            variableIDs.map( variableID => {
+                const variable = metaVariables[variableID];
+                if (variable.type == 'productList' || variableID.match(/^also/)) {
+                    algorithms.push({
+                        class: "fieldPreview",
+                        name: "Preview for field: " + variable.name,
+                        id: "fakeAlgFor" + variableID,
+                        config: {
+                            must: [
+                                {
+                                    type:"customRule",
+                                    fields: ["itemGroupID", "$in", "value", JSON.stringify(currentItem[variableID])]
+                                }
+                            ],
+                            mustNot: [],
+                            should: []
+                        }
+                    });
+                    algorithms.push({
+                        class: "fieldPreview",
+                        name: "preview for field: " + variable.name + " | the same brand",
+                        id: "fakeAlgFor" + variableID + "SameBrand",
+                        config: {
+                            must: [
+                                {
+                                    type:"customRule",
+                                    fields: ["itemGroupID", "$in", "value", JSON.stringify(currentItem[variableID])]
+                                },
+                                {
+                                    type:"customRule",
+                                    fields: ["brand", "$eq", "value", JSON.stringify(currentItem.brand)]
+                                }
+                            ],
+                            mustNot: [],
+                            should: []
+                        }
+                    });
+                    algorithms.push({
+                        class: "fieldPreview",
+                        name: "preview for field: " + variable.name + " | the same productType",
+                        id: "fakeAlgFor" + variableID + "SameProductType",
+                        config: {
+                            must: [
+                                {
+                                    type:"customRule",
+                                    fields: ["itemGroupID", "$in", "value", JSON.stringify(currentItem[variableID])]
+                                },
+                                {
+                                    type:"customRule",
+                                    fields: ["productType", "$eq", "value", JSON.stringify(currentItem.productType)]
+                                }
+                            ],
+                            mustNot: [],
+                            should: []
+                        }
+                    });
+                }
+            });
+        }
+        return algorithms;
     }
 
     function loadAlgorithmPreviewForDetailItem(previewIndex, algorithmID, itemID) {
         console.log('Load algorithm preview for detail itemID ' + itemID);
         var state = store.getState();
         const algorithms = state.algorithms;
+        const algorithm = algorithms && algorithms[_findIndexByID(algorithms, algorithmID)];
         const cloudID = state.context.cloudID;
         const accountID = state.context.accountID;
         const envID = state.context.environmentID;
         const tableID = state.context.tableID;
+
         if (tableID) {
             const adsTableID = tableID.replace(/ads./,'');
 
@@ -218,15 +341,36 @@ export function createAppActions(store) {
             };
             store.updateState({ algorithmPreviews });
 
-            jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + envID + '/workflow.json' +
-                '?_e=getRecommendation&_vid=AAABXGgkcSIz5pScemhlisdj&_v=%220.1.0%22&_a=persooAnalytics' +
-                '&algorithmID=%22' + algorithmID + '%22&itemGroupID=%22' + itemID + '%22',
-                {
-                    method: 'GET',
-                    expectedStatuses: [200],
+            let promise;
+            let queryAlgorithmID = algorithmID;
+            if (algorithm && algorithm.class == "scenario") {
+                queryAlgorithmID = algorithmID.replace(/^scenario_/, '');
+                promise = jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + envID + '/workflow.json' +
+                    '?_e=getScenario&_vid=AAABXGgkcSIz5pScemhlisdj&_v=%220.1.0%22&_a=persooAnalytics' +
+                    '&scenarioID=%22' + queryAlgorithmID + '%22&itemGroupID=%22' + itemID + '%22',
+                    {
+                        method: 'GET',
+                        expectedStatuses: [200],
+                    }
+                );
+            } else {
+                // prepare request changes for "preview fields algorithms"
+                let boolQueryParam = "";
+                if (algorithm && algorithm.class == "fieldPreview") {
+                    queryAlgorithmID = 'productsDebugAlgorithm';
+                    boolQueryParam = '&boolQuery=' + encodeURIComponent(JSON.stringify(algorithm.config));
                 }
-            )
-            .then((response) => {
+
+                promise = jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + envID + '/workflow.json' +
+                    '?_e=getRecommendation&_vid=AAABXGgkcSIz5pScemhlisdj&_v=%220.1.0%22&_a=persooAnalytics' +
+                    '&algorithmID=%22' + queryAlgorithmID + '%22&itemGroupID=%22' + itemID + '%22' + boolQueryParam,
+                    {
+                        method: 'GET',
+                        expectedStatuses: [200],
+                    }
+                );
+            }
+            promise.then((response) => {
                 if (response.body.data && response.body.data.items && response.body.data.items.length > 0) {
                     let { algorithmPreviews } = store.getState();
                     algorithmPreviews[algorithmID].items = response.body.data.items;
@@ -244,9 +388,10 @@ export function createAppActions(store) {
         }
     }
     function loadAlgorithmPreviews(itemID) {
-        const { algorithmPreviews, context, algorithms } = store.getState();
-        const { selectedAlgorithmIDs } = context;
-        if (algorithms && algorithms.length > 0) {
+        const { algorithmPreviews, context, algorithms, scenarios, metadata } = store.getState();
+        const { selectedAlgorithmIDs, tableID } = context;
+        const metaVariables = metadata && metadata[tableID];
+        if (metaVariables && algorithms && algorithms.length > 0 && scenarios && scenarios.length > 0) {
             selectedAlgorithmIDs.map( (algorithmID, slotIndex) => {
                 loadAlgorithmPreviewForDetailItem(slotIndex, algorithmID, itemID);
             })
@@ -281,7 +426,6 @@ export function createAppActions(store) {
     return {
         loadAccounts: loadAccounts,
         loadDetailItem: loadDetailItem,
-        loadAlgorithmPreviews: loadAlgorithmPreviews,
         changeAlgorithmInSlot: changeAlgorithmInSlot,
         removeAlgorithmInSlot: removeAlgorithmInSlot,
         updateContextFromURL(accountID, environmentID, tableID) {
@@ -327,6 +471,7 @@ export function createAppActions(store) {
             loadMetaDataTables();
             loadSearchResultsWidgetTemplate();
             loadAlgorithms();
+            loadScenarios();
 
             route(getURLfromState(context));
         },

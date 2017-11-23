@@ -18,6 +18,10 @@ import Cookies from '../utils/cookies';
 
 const SELECTED_ALGORITHM_IDS_COOKIE = 'selectedAlgorithmIDs';
 
+// to be able to call "preact-router" directly from my EJS tempates.
+var window = typeof window === 'undefined' ? {} : window;
+window.paGlobalRouteFunction = Router.route;
+
 export default class App extends Component {
     constructor(args) {
         super(args);
@@ -40,9 +44,6 @@ export default class App extends Component {
 
         /* main */
         this.actions.loadAccounts();
-
-        // to be able to call "preact-router" directly from my EJS tempates.
-        window.paGlobalRouteFunction = Router.route;
     }
 
     _updateLocalStateFromStore() {
@@ -129,7 +130,6 @@ export default class App extends Component {
                         algorithms={algorithms}
                         algorithmPreviews={algorithmPreviews}
                         loadDetailItem={this.actions.loadDetailItem}
-                        loadAlgorithmPreviews={this.actions.loadAlgorithmPreviews}
                         changeAlgorithmInSlot={this.actions.changeAlgorithmInSlot}
                         removeAlgorithmInSlot={this.actions.removeAlgorithmInSlot}
                     />

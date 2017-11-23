@@ -37,6 +37,7 @@ export function getInitialState(options) {
             selectedAlgorithmIDs: options.selectedAlgorithmIDs || [] // do show cards for each algorithm on product detail
         },
         algorithms: [],
+        scenarios: [],
         algorithmPreviews: {
             // algorithmID: {
             //     items: []

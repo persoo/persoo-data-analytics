@@ -18,7 +18,7 @@ export default class Detail extends Component {
         console.log('Route <Detail>.render()');
         let upURL = getURLfromState(props.context, 'list') + document.location.search;
         let { context, currentItem, currentItemLoaded, currentItemLoading,
-            loadDetailItem, loadAlgorithmPreviews, changeAlgorithmInSlot, removeAlgorithmInSlot,
+            loadDetailItem, changeAlgorithmInSlot, removeAlgorithmInSlot,
             algorithms, algorithmPreviews } = props;
         let haveData = props.context.accountID !== null &&
             props.context.environmentID !== null &&
@@ -86,7 +86,6 @@ export default class Detail extends Component {
 
         if (currentItemLoading != context.itemID) {
             loadDetailItem(context.itemID);
-            loadAlgorithmPreviews(context.itemID);
         }
 
         return (
