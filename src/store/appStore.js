@@ -34,7 +34,9 @@ export function getInitialState(options) {
             pageType: 'list',
 
             itemID: null,
-            selectedAlgorithmIDs: options.selectedAlgorithmIDs || [] // do show cards for each algorithm on product detail
+            selectedAlgorithmIDs: options.selectedAlgorithmIDs || [], // do show cards for each algorithm on product detail
+
+            browserID: options.browserID || 'AAABXGgkcSIz5pScemhlisdj'
         },
         algorithms: [],
         scenarios: [],

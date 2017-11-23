@@ -58,17 +58,14 @@ export function createAppActions(store) {
         .catch(_handleAPIError);
     }
     function loadMetaDataTables() {
-        let state = store.getState();
-        let cloudID = state.context.cloudID;
-        let accountID = state.context.accountID;
-        let envID = state.context.environmentID;
+        const { cloudID, accountID, environmentID } = store.getState().context;
 
-        if (accountID == null || envID == null) {
+        if (accountID == null || environmentID == null) {
             console.log('Action: loadMetaDataTables(): cannot load tables for acccount "null"');
             return;
         }
 
-        jsonFetch( cloudConfig.clouds[cloudID].adminAPIEndpoint + '/accounts/' + accountID + '/metadata?environment=' + envID, {
+        jsonFetch( cloudConfig.clouds[cloudID].adminAPIEndpoint + '/accounts/' + accountID + '/metadata?environment=' + environmentID, {
             method: 'GET',
             // body: {},
             expectedStatuses: [200],
@@ -98,13 +95,9 @@ export function createAppActions(store) {
         .catch(_handleAPIError);
     }
     function loadMetaDataVariableForTable() {
-        var state = store.getState();
-        let cloudID = state.context.cloudID;
-        var accountID = state.context.accountID;
-        var envID = state.context.environmentID;
-        var tableID = state.context.tableID;
+        const { cloudID, accountID, environmentID, tableID } = store.getState().context;
 
-        jsonFetch( cloudConfig.clouds[cloudID].adminAPIEndpoint + '/accounts/' + accountID + '/metadata/' + tableID + '/listVariables?environment=' + envID, {
+        jsonFetch( cloudConfig.clouds[cloudID].adminAPIEndpoint + '/accounts/' + accountID + '/metadata/' + tableID + '/listVariables?environment=' + environmentID, {
             method: 'GET',
             // body: {},
             expectedStatuses: [200],
@@ -119,10 +112,7 @@ export function createAppActions(store) {
         .catch(_handleAPIError);
     }
     function loadSearchResultsWidgetTemplate() {
-        var state = store.getState();
-        let cloudID = state.context.cloudID;
-        var accountID = state.context.accountID;
-        var envID = state.context.environmentID;
+        const { cloudID, accountID, environmentID } = store.getState().context;
 
         /* System template always exists and are the same for all accounts. We read them form API, so we need not to maintain
            template bugfixes in this app.   */
@@ -138,19 +128,16 @@ export function createAppActions(store) {
     }
     function loadDetailItem(itemID) {
         console.log('Load detail itemID ' + itemID);
-        var state = store.getState();
-        let cloudID = state.context.cloudID;
-        var accountID = state.context.accountID;
-        var envID = state.context.environmentID;
-        var tableID = state.context.tableID;
+        const { cloudID, browserID, accountID, environmentID, tableID } = store.getState().context;
+
         if (tableID) {
             var adsTableID = tableID.replace(/ads./,'');
 
             store.updateState({
                 currentItemLoading: itemID
             });
-            jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + envID + '/workflow.json' +
-                '?_e=getRecommendation&_vid=AAABXGgkcSIz5pScemhlisdj&_v=%220.1.0%22&_a=persooAnalytics' +
+            jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + environmentID + '/workflow.json' +
+                '?_e=getRecommendation&_vid=%22' + browserID + '%22&_v=%220.1.0%22&_a=persooAnalytics' +
                 '&algorithmID=%22' + adsTableID + 'DebugAlgorithm%22&itemGroupID=%22' + itemID + '%22' +
                 '&boolQuery=' + encodeURIComponent(JSON.stringify({
                     must:[
@@ -191,10 +178,7 @@ export function createAppActions(store) {
         }
     }
     function loadAlgorithms() {
-        var state = store.getState();
-        let cloudID = state.context.cloudID;
-        var accountID = state.context.accountID;
-        var envID = state.context.environmentID;
+        const { cloudID, accountID, environmentID } = store.getState().context;
 
         jsonFetch( cloudConfig.clouds[cloudID].adminAPIEndpoint + '/accounts/' + accountID + '/algorithms', {
             method: 'GET',
@@ -212,10 +196,7 @@ export function createAppActions(store) {
     }
 
     function loadScenarios() {
-        var state = store.getState();
-        let cloudID = state.context.cloudID;
-        var accountID = state.context.accountID;
-        var envID = state.context.environmentID;
+        const { cloudID, accountID, environmentID } = store.getState().context;
 
         jsonFetch( cloudConfig.clouds[cloudID].adminAPIEndpoint + '/accounts/' + accountID + '/scenarios', {
             method: 'GET',
@@ -325,10 +306,7 @@ export function createAppActions(store) {
         var state = store.getState();
         const algorithms = state.algorithms;
         const algorithm = algorithms && algorithms[_findIndexByID(algorithms, algorithmID)];
-        const cloudID = state.context.cloudID;
-        const accountID = state.context.accountID;
-        const envID = state.context.environmentID;
-        const tableID = state.context.tableID;
+        const { cloudID, browserID, accountID, environmentID, tableID } = state.context;
 
         if (tableID) {
             const adsTableID = tableID.replace(/ads./,'');
@@ -345,8 +323,8 @@ export function createAppActions(store) {
             let queryAlgorithmID = algorithmID;
             if (algorithm && algorithm.class == "scenario") {
                 queryAlgorithmID = algorithmID.replace(/^scenario_/, '');
-                promise = jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + envID + '/workflow.json' +
-                    '?_e=getScenario&_vid=AAABXGgkcSIz5pScemhlisdj&_v=%220.1.0%22&_a=persooAnalytics' +
+                promise = jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + environmentID + '/workflow.json' +
+                    '?_e=getScenario&_vid=%22' + browserID + '%22&_v=%220.1.0%22&_debug=1&_a=persooAnalytics' +
                     '&scenarioID=%22' + queryAlgorithmID + '%22&itemGroupID=%22' + itemID + '%22',
                     {
                         method: 'GET',
@@ -361,8 +339,8 @@ export function createAppActions(store) {
                     boolQueryParam = '&boolQuery=' + encodeURIComponent(JSON.stringify(algorithm.config));
                 }
 
-                promise = jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + envID + '/workflow.json' +
-                    '?_e=getRecommendation&_vid=AAABXGgkcSIz5pScemhlisdj&_v=%220.1.0%22&_a=persooAnalytics' +
+                promise = jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + environmentID + '/workflow.json' +
+                    '?_e=getRecommendation&_vid=%22' + browserID + '%22&_v=%220.1.0%22&_a=persooAnalytics' +
                     '&algorithmID=%22' + queryAlgorithmID + '%22&itemGroupID=%22' + itemID + '%22' + boolQueryParam,
                     {
                         method: 'GET',

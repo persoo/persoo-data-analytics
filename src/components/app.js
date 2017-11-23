@@ -18,13 +18,13 @@ import Cookies from '../utils/cookies';
 
 const SELECTED_ALGORITHM_IDS_COOKIE = 'selectedAlgorithmIDs';
 
-// to be able to call "preact-router" directly from my EJS tempates.
-var window = typeof window === 'undefined' ? {} : window;
-window.paGlobalRouteFunction = Router.route;
-
 export default class App extends Component {
     constructor(args) {
         super(args);
+        // to be able to call "preact-router" directly from my EJS tempates.
+        if (typeof window !== "undefined") {
+            window.paGlobalRouteFunction = Router.route;
+        }
 
         // Remember selected algorithm in cookies, so any change will update by F5 on each browser tab
         let selectedAlgorithmIDs = [];
@@ -32,7 +32,8 @@ export default class App extends Component {
             selectedAlgorithmIDs = JSON.parse(Cookies.getItem(SELECTED_ALGORITHM_IDS_COOKIE));
         }
         let options = {
-            selectedAlgorithmIDs
+            selectedAlgorithmIDs,
+            browserID: (Cookies.hasItem('persooVid') && Cookies.getItem('persooVid')) || 'AAABXGgkcSIz5pScemhlisdj'
         };
 
         this.store = createAppStore(getInitialState(options));
