@@ -8,6 +8,12 @@ export default {
             scriptsEndpoint: 'https://scripts.persoo.cz/',
             adminEndpoint: 'https://admin.persoo.cz'
         },
+        'o2': {
+            rtpAPIEndpoint: 's.o2.cz',
+            adminAPIEndpoint: 'https://adminapi-o2.persoo.cz',
+            scriptsEndpoint: 'https://persoo-o2-310448.c.cdn77.org/',
+            adminEndpoint: 'https://admin-o2.persoo.cz'
+        },
         'test-a': {
             rtpAPIEndpoint: 'rtp-test-a.persoo.cz',
             adminAPIEndpoint: 'https://adminapi-test-a.persoo.cz',

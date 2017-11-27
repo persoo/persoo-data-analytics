@@ -56,7 +56,10 @@ export default class AlgorithmPreviewBlock extends Component {
                                                     <img src={currentItem.imageLink} class={style.algorithmPreviewItemImage}/>
                                                     <div>{currentItem.title}</div>
                                                 </a>
-                                                <div><span class={style.label}>categoryID:</span> {currentItem.categoryID}</div>
+                                                <div><span class={style.label}>categoryID:</span> {
+                                                    currentItem.categoryID +
+                                                    ((currentItem.category || currentItem.categoryName) ? ' / ' + (currentItem.category || currentItem.categoryName) : '')
+                                                }</div>
                                                 <div><span class={style.label}>productType:</span> {currentItem.productType}</div>
                                                 <div><span class={style.label}>brand:</span> {currentItem.brand}</div>
                                                 <div><span class={style.label}>price:</span> {currentItem.price}</div>

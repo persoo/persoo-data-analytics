@@ -24,7 +24,10 @@ export default class ItemDetailLarge extends Component {
                                 </LayoutGrid.Cell>
                                 <LayoutGrid.Cell cols="4">
                                     <List>
-                                        <List.Item>categoryID: {currentItem.categoryID}</List.Item>
+                                        <List.Item>categoryID: {
+                                            currentItem.categoryID +
+                                            ((currentItem.category || currentItem.categoryName) ? ' / ' + (currentItem.category || currentItem.categoryName) : '')
+                                        }</List.Item>
                                         <List.Item>productType: {currentItem.productType}</List.Item>
                                         <List.Item>brand: {currentItem.brand}</List.Item>
                                         <List.Item>price: {currentItem.price}</List.Item>

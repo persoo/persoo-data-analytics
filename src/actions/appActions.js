@@ -345,7 +345,7 @@ export function createAppActions(store) {
                 }
 
                 promise = jsonFetch( 'https://' + cloudConfig.clouds[cloudID].rtpAPIEndpoint + '/' + accountID + '/' + environmentID + '/workflow.json' +
-                    '?_e=getRecommendation&_vid=%22' + browserID + '%22&_v=%220.1.0%22&_a=persooAnalytics' +
+                    '?_e=getRecommendation&_vid=%22' + browserID + '%22&_v=%220.1.0%22&_debug=1&_a=persooAnalytics' +
                     '&algorithmID=%22' + queryAlgorithmID + '%22&itemGroupID=%22' + itemID + '%22' + boolQueryParam,
                     {
                         method: 'GET',
